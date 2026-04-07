@@ -1,0 +1,14 @@
+[Unit]
+Description=Pump Station Logger
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/pump_station
+ExecStart=/opt/pump_station/venv/bin/python /opt/pump_station/app.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
