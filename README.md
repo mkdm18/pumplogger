@@ -3,6 +3,9 @@
 ![Status](https://img.shields.io/badge/status-stable-green)
 ![Platform](https://img.shields.io/badge/platform-RaspberryPi-orange)
 
+## 📦 Download
+[Download v1.0](https://github.com/mkdm18/pumplogger/releases/tag/v1.0)
+
 ## 📌 Overview
 Pump Station Logger — автономная система сбора, расчёта и хранения данных насосной станции.
 ✔ Работает без интернета  
