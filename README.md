@@ -150,13 +150,15 @@ throttled=0x0
 ### 7.5. Verify SSD Health
 Проверить SSD:
 ```bash
-sudo smartctl -a -d sat /dev/sda
+     sudo smartctl -a -d sat /dev/sda
 ```
 Проверить:
 Reallocated_Sector_Ct = 0
 Current_Pending_Sector = 0
 Offline_Uncorrectable = 0
+
 ---
+
 ### 7.6. Disable SMART daemon (optional)
 USB SSD bridge устройства часто вызывают failed state smartmontools.service.
 рекомендуется:
@@ -166,6 +168,7 @@ sudo systemctl stop smartmontools.service
 sudo systemctl reset-failed
 ```
 SMART при этом остаётся доступен вручную через smartctl.
+
 ---
 ## 📦 8. Installation
 Перед началом: архив pumplogger_v1.0.zip уже должен лежать на Raspberry, например в /home/user.
