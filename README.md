@@ -79,6 +79,94 @@ MV210-202:
 Датчик:
 * Индуктивный бесконтактныей датчики AR-LM12-3004PC 
 
+## Recommended Raspberry Pi OS
+Рекомендуется использовать:
+Raspberry Pi OS Lite 64-bit
+Без GUI/Desktop environment.
+
+## 🔧 Raspberry Pi System Preparation (Recommended Before Installation)
+1. Update Raspberry Pi OS
+```bash
+     sudo apt update 
+     sudo apt upgrade -y 
+     sudo apt install mc htop sysstat smartmontools -y
+     sudo reboot
+```
+2. Disable UAS mode for USB SSD
+Некоторые USB-SATA bridge контроллеры (особенно JMicron) вызывают:
+* random I/O errors
+* USB reset
+* boot freeze
+* EXT4 recovery
+* unstable SQLite behavior
+
+Проверь USB bridge:
+```bash
+lsusb
+```
+Пример:
+152d:0901 JMicron Technology Corp.
+
+Открой boot cmdline:
+```bash
+sudo mcedit /boot/firmware/cmdline.txt
+```
+В конец ОДНОЙ строки добавить:
+
+usb-storage.quirks=152d:0901:u
+
+После reboot SSD должен работать через:
+```bash
+lsusb -t
+```
+Ожидается:
+Driver=usb-storage
+а НЕ:
+Driver=uas
+
+3. Configure Stable HDMI Mode
+
+Для headless/industrial систем рекомендуется отключить полный KMS graphics stack.
+Открыть:
+```bash
+sudo mcedit /boot/firmware/config.txt
+```
+Изменить dtoverlay:
+dtoverlay=disable-v3d
+Добавить:
+hdmi_force_hotplug=1
+hdmi_group=2
+hdmi_mode=82
+Это:
+* предотвращает потерю HDMI сигнала
+* отключает проблемный vc4 DRM/KMS stack
+* фиксирует стабильный HDMI режим 1920x1080@60Hz
+
+4. Verify Power Stability
+После первого boot проверить:
+vcgencmd get_throttled
+Нормальное состояние:
+throttled=0x0
+
+5. Verify SSD Health
+Проверить SSD:
+```bash
+sudo smartctl -a -d sat /dev/sda
+```
+Проверить:
+Reallocated_Sector_Ct = 0
+Current_Pending_Sector = 0
+Offline_Uncorrectable = 0
+
+6. Disable SMART daemon (optional)
+USB SSD bridge устройства часто вызывают failed state smartmontools.service.
+рекомендуется:
+```bash
+sudo systemctl disable smartmontools.service
+sudo systemctl stop smartmontools.service
+sudo systemctl reset-failed
+```
+SMART при этом остаётся доступен вручную через smartctl.
 
 
 
