@@ -7,7 +7,7 @@
 [Download v1.0](https://github.com/mkdm18/pumplogger/releases/tag/v1.0)
 
 ## 📌 2. Overview
-Pump Station Logger — автономная система сбора, расчёта и хранения данных насосной станции.
+Pump Station Logger — автономная система сбора, расчёта и хранения данных насосной станции.  
 ✔ Работает без интернета  
 ✔ Автоматический запуск  
 ✔ Защита от потери данных  
@@ -16,14 +16,14 @@ Pump Station Logger — автономная система сбора, расч
 
 ## 🚀 3. Version 1.0 (Stable)
 
-### 3.1. Основные возможности
-- Расчёт RPM по периоду (DI3)
-- Детектор остановки по (DI1)
-- Общий литраж и SMART аналитика хранится в БД
-- Автоэкспорт на USB
-- Авторазмонтирование флешки
-- SMART-статистика
-- Ротационные backup БД
+     ### 3.1. Основные возможности
+     - Расчёт RPM по периоду (DI3)
+     - Детектор остановки по (DI1)
+     - Общий литраж и SMART аналитика хранится в БД
+     - Автоэкспорт на USB
+     - Авторазмонтирование флешки
+     - SMART-статистика
+     - Ротационные backup БД
 
 ## 🧠 4. Architecture
 ```
@@ -81,13 +81,13 @@ Raspberry Pi OS Lite 64-bit
 
 ## 🔧 7. Raspberry Pi System Preparation (Recommended Before Installation)
 
-### 7.1. Update Raspberry Pi OS
-```bash
-     sudo apt update 
-     sudo apt upgrade -y 
-     sudo apt install mc htop sysstat smartmontools -y
-     sudo reboot
-```
+     ### 7.1. Update Raspberry Pi OS
+     ```bash
+          sudo apt update 
+          sudo apt upgrade -y 
+          sudo apt install mc htop sysstat smartmontools -y
+          sudo reboot
+     ```
 
 ### 7.2. Disable UAS mode for USB SSD
 Некоторые USB-SATA bridge контроллеры (особенно JMicron) вызывают:
