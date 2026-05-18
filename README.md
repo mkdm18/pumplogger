@@ -16,14 +16,14 @@ Pump Station Logger — автономная система сбора, расч
 
 ## 🚀 3. Version 1.0 (Stable)
 
-     ### 3.1. Основные возможности
-     - Расчёт RPM по периоду (DI3)
-     - Детектор остановки по (DI1)
-     - Общий литраж и SMART аналитика хранится в БД
-     - Автоэкспорт на USB
-     - Авторазмонтирование флешки
-     - SMART-статистика
-     - Ротационные backup БД
+### 3.1. Основные возможности
+- Расчёт RPM по периоду (DI3)
+- Детектор остановки по (DI1)
+- Общий литраж и SMART аналитика хранится в БД
+- Автоэкспорт на USB
+- Авторазмонтирование флешки
+- SMART-статистика
+- Ротационные backup БД
 
 ## 🧠 4. Architecture
 ```
@@ -81,13 +81,13 @@ Raspberry Pi OS Lite 64-bit
 
 ## 🔧 7. Raspberry Pi System Preparation (Recommended Before Installation)
 
-     ### 7.1. Update Raspberry Pi OS
-     ```bash
-          sudo apt update 
-          sudo apt upgrade -y 
-          sudo apt install mc htop sysstat smartmontools -y
-          sudo reboot
-     ```
+### 7.1. Update Raspberry Pi OS
+```bash
+     sudo apt update 
+     sudo apt upgrade -y 
+     sudo apt install mc htop sysstat smartmontools -y
+     sudo reboot
+```
 
 ### 7.2. Disable UAS mode for USB SSD
 Некоторые USB-SATA bridge контроллеры (особенно JMicron) вызывают:
@@ -100,22 +100,18 @@ Raspberry Pi OS Lite 64-bit
 ```bash
      lsusb
 ```
-Пример:
-152d:0901 JMicron Technology Corp.
+Пример: `152d:0901 JMicron Technology Corp.`  
 Открой boot cmdline:
 ```bash
      sudo mcedit /boot/firmware/cmdline.txt
 ```
-В конец ОДНОЙ строки добавить:
-usb-storage.quirks=152d:0901:u
-После reboot SSD должен работать через:
+В конец строки добавить: `usb-storage.quirks=152d:0901:u`  
+После reboot, выполни
 ```bash
      lsusb -t
 ```
-Ожидается:
-Driver=usb-storage
-а НЕ:
-Driver=uas
+Ожидается: `Driver=usb-storage` а НЕ: `Driver=uas`  
+SSD должен работать через Driver=usb-storage:
 
 ### 7.3. Configure Stable HDMI Mode
 Для headless/industrial систем рекомендуется отключить полный KMS graphics stack.
