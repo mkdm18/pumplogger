@@ -115,39 +115,40 @@ SSD должен работать через Driver=usb-storage:
 
 ### 7.3. Configure Stable HDMI Mode
 Для headless/industrial систем рекомендуется отключить полный KMS graphics stack.
-Открыть:
+Открой:
 ```bash
      sudo mcedit /boot/firmware/config.txt
 ```
-Изменить dtoverlay:
-dtoverlay=disable-v3d
-Добавить:
+Измени dtoverlay на `dtoverlay=disable-v3d`  
+Добавь:  
+``` 
 hdmi_force_hotplug=1
 hdmi_group=2
 hdmi_mode=82
+```
 Это:
 * предотвращает потерю HDMI сигнала
 * отключает проблемный vc4 DRM/KMS stack
 * фиксирует стабильный HDMI режим 1920x1080@60Hz
 
 ### 7.4. Verify Power Stability
-После первого boot проверить:
-vcgencmd get_throttled
-Нормальное состояние:
-throttled=0x0
+После первого boot выполни: `vcgencmd get_throttled`  
+Нормальное состояние: `throttled=0x0`
 
 ### 7.5. Verify SSD Health
 Проверить SSD:
 ```bash
      sudo smartctl -a -d sat /dev/sda
 ```
-Проверить:
+Убедись что:
+```
 Reallocated_Sector_Ct = 0
 Current_Pending_Sector = 0
 Offline_Uncorrectable = 0
+```
 
 ### 7.6. Disable SMART daemon (optional)
-USB SSD bridge устройства часто вызывают failed state smartmontools.service.
+USB SSD bridge устройства часто вызывают `failed state smartmontools.service.`  
 рекомендуется:
 ```bash
 sudo systemctl disable smartmontools.service
@@ -157,7 +158,7 @@ sudo systemctl reset-failed
 SMART при этом остаётся доступен вручную через smartctl.
 
 ## 📦 8. Installation
-Перед началом: архив pumplogger_v1.0.zip уже должен лежать на Raspberry, например в /home/user.
+Перед началом: архив `pumplogger_v1.0.zip` уже должен лежать на Raspberry, например в `/home/user`.
 ### 8.1. Разархифировать проект во временную папку
 ```bash
      unzip pumplogger_v1.0.zip -d /home/user/pump_release_tmp
