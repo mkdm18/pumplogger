@@ -521,3 +521,62 @@ SELECT 'system_log', COUNT(*) FROM system_log;"
 ## 🏁 Status
 Version 1.0 — стабильная версия  
 Готово к эксплуатации
+
+
+исправление 1 mv210.py
+```bash
+class MV210Client:
+    def __init__(self):
+        self.client = None
+
+    def connect(self):
+        self.disconnect()
+        self.client = ModbusTcpClient(MV210_IP, port=MV210_PORT)
+
+        if not self.client.connect():
+            raise RuntimeError("Connection to MV210 failed")
+
+    def disconnect(self):
+        try:
+            if self.client:
+                self.client.close()
+        except Exception:
+            pass
+        finally:
+            self.client = None
+
+    def is_connected(self) -> bool:
+        return self.client is not None
+```
+Исправление 2 Правим app.py
+замени 
+```bash
+        # Чтение МВ210
+        try:
+            counter = mv.read_di1_counter()
+            raw_period_ms = mv.read_di3_period_ms()
+        except Exception as e:
+            db.insert_system_log("ERROR", "MV210_READ_ERROR", str(e))
+            db.commit()
+            time.sleep(WAIT_POLL_SECONDS)
+            continue
+```
+на
+```bash
+        # Чтение МВ210
+        try:
+            counter = mv.read_di1_counter()
+            raw_period_ms = mv.read_di3_period_ms()
+        except Exception as e:
+            db.insert_system_log("ERROR", "MV210_READ_ERROR", str(e))
+            db.commit()
+
+            try:
+                mv.disconnect()
+            except Exception:
+                pass
+
+            time.sleep(WAIT_POLL_SECONDS)
+            continue
+```
+
