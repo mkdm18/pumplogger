@@ -621,4 +621,78 @@ class MV210Client:
             time.sleep(WAIT_POLL_SECONDS)
             continue
 ```
+Исправление 3 Правим usb_export.py 
+В начале файла добавь os:
+```bash
+import csv, json, sqlite3, subprocess, time, os
+```
+find_usb_partition() замени целиком на эту:
+```bash
+def find_usb_partition():
+    """
+    Ищем реальную флешку:
+    - removable device RM=1
+    - поддерживаем флешки с разделом: /dev/sdb1
+    - поддерживаем флешки без раздела: /dev/sdb
+    - исключаем системные разделы
+    """
+    cmd = ["lsblk", "-J", "-o", "NAME,PATH,RM,MOUNTPOINT,FSTYPE,TYPE"]
+    res = run_cmd(cmd)
+    if res.returncode != 0:
+        return None
 
+    data = json.loads(res.stdout)
+
+    for dev in data.get("blockdevices", []):
+        if dev.get("rm") != True:
+            continue
+
+        dev_path = dev.get("path")
+        dev_mountpoint = dev.get("mountpoint")
+        dev_fstype = dev.get("fstype")
+
+        # 1. Сначала ищем разделы типа /dev/sdb1
+        for part in dev.get("children", []) or []:
+            path = part.get("path")
+            mountpoint = part.get("mountpoint")
+            fstype = part.get("fstype")
+
+            if not path or not fstype:
+                continue
+
+            if mountpoint in ("/", "/boot", "/boot/firmware"):
+                continue
+
+            return path
+
+        # 2. Если разделов нет, но сама флешка имеет файловую систему
+        # например /dev/sdb с exfat/vfat прямо на диске
+        if dev_path and dev_fstype:
+            if dev_mountpoint not in ("/", "/boot", "/boot/firmware"):
+                return dev_path
+
+    return None
+```
+Исправление 4 замени mount_usb_partition()
+```bash
+def mount_usb_partition(dev_path: str, mount_point: str) -> bool:
+    ensure_mount_point()
+
+    if is_mounted(mount_point):
+        return True
+
+    # uid/gid пользователя omega, чтобы сервис мог писать на vfat/exfat/ntfs
+    uid = os.getuid()
+    gid = os.getgid()
+
+    mount_options = f"uid={uid},gid={gid},umask=002"
+
+    res = run_cmd(["mount", "-o", mount_options, dev_path, mount_point])
+
+    if res.returncode == 0:
+        return True
+
+    # fallback для ext4 или других ФС, где uid/gid mount options не поддерживаются
+    res = run_cmd(["mount", dev_path, mount_point])
+    return res.returncode == 0
+    ```
