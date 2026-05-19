@@ -440,6 +440,83 @@ WAL mode уменьшает:
      du -sh /opt/pump_station/data #Размер папки данных
      df -h #Свободное место на диске
 ```
+#### 8.14.6. Последний system log:
+```bash
+sqlite3 /opt/pump_station/data/main.db "
+SELECT datetime(timestamp_utc,'unixepoch'),
+level,event_code,message
+FROM system_log
+ORDER BY id DESC
+LIMIT 20;"
+```
+#### 8.14.7. Последний work log:
+```bash
+sqlite3 /opt/pump_station/data/main.db "
+SELECT *
+FROM work_log
+ORDER BY id DESC
+LIMIT 5;"
+```
+#### 8.14.8. Системные события:
+```bash
+sqlite3 /opt/pump_station/data/main.db "
+SELECT
+datetime(timestamp_utc,'unixepoch'),
+level,
+event_code,
+message
+FROM system_log
+ORDER BY id DESC
+LIMIT 20;"
+```
+#### 8.14.9. Последние рабочие данные:
+```bash
+sqlite3 /opt/pump_station/data/main.db "
+SELECT
+datetime(timestamp_utc,'unixepoch'),
+manifold_pressure_mpa,
+pump_rpm,
+pump_flow_lps,
+pump_total_liters
+FROM work_log
+ORDER BY id DESC
+LIMIT 20;"
+```
+#### 8.14.10. Последние board данные:
+```bash
+sqlite3 /opt/pump_station/data/main.db "
+SELECT
+datetime(timestamp_utc,'unixepoch'),
+manifold_pressure_mpa,
+mech_oil_pressure_kpa,
+mech_oil_temp_c,
+transmission_oil_pressure_kpa
+FROM board_log
+ORDER BY id DESC
+LIMIT 20;"
+```
+#### 8.14.11. Все meta параметры:
+```bash
+sqlite3 /opt/pump_station/data/main.db "
+SELECT * FROM meta_state;"
+```
+
+#### 8.14.12. SMART counters
+```bash
+sqlite3 /opt/pump_station/data/main.db "
+SELECT * FROM smart_counters;"
+```
+
+#### 8.14.13. Размер таблиц
+```bash
+sqlite3 /opt/pump_station/data/main.db "
+SELECT
+'board_log', COUNT(*) FROM board_log
+UNION ALL
+SELECT 'work_log', COUNT(*) FROM work_log
+UNION ALL
+SELECT 'system_log', COUNT(*) FROM system_log;"
+```
 
 ## 🏁 Status
 Version 1.0 — стабильная версия  
