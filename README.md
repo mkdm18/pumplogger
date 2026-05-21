@@ -474,4 +474,9 @@ SELECT 'system_log', COUNT(*) FROM system_log;"
 Version 1.0 — стабильная версия  
 Готово к эксплуатации
 
+## Changelog
+Смотри:
+```text
+CHANGELOG.md
+---
 
