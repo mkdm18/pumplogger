@@ -145,6 +145,12 @@ def main():
         except Exception as e:
             db.insert_system_log("ERROR", "MV210_READ_ERROR", str(e))
             db.commit()
+
+            try:
+                mv.disconnect()
+            except Exception:
+                pass
+
             time.sleep(WAIT_POLL_SECONDS)
             continue
 

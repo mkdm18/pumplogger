@@ -464,14 +464,3 @@ SELECT 'work_log', COUNT(*) FROM work_log
 UNION ALL
 SELECT 'system_log', COUNT(*) FROM system_log;"
 ```
-
-## 🏁 Status
-Version 1.0 — стабильная версия  
-Готово к эксплуатации
-
-## Changelog
-Смотри:
-```text
-CHANGELOG.md
----
-

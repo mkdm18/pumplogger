@@ -1,4 +1,4 @@
-import csv, json, sqlite3, subprocess, time
+import csv, json, sqlite3, subprocess, time, os
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
 from config import DB_PATH, USB_MOUNT_POINT, TIMEZONE_OFFSET_MINUTES
@@ -8,22 +8,28 @@ def run_cmd(cmd):
 def find_usb_partition():
     """
     Ищем реальную флешку:
-    - только removable (RM=1)
-    - не смонтирована в /boot или /
+    - removable device RM=1
+    - поддерживаем флешки с разделом: /dev/sdb1
+    - поддерживаем флешки без раздела: /dev/sdb
+    - исключаем системные разделы
     """
-    cmd = ["lsblk", "-J", "-o", "NAME,PATH,RM,MOUNTPOINT,FSTYPE"]
+    cmd = ["lsblk", "-J", "-o", "NAME,PATH,RM,MOUNTPOINT,FSTYPE,TYPE"]
     res = run_cmd(cmd)
     if res.returncode != 0:
         return None
 
-    import json
     data = json.loads(res.stdout)
 
     for dev in data.get("blockdevices", []):
         if dev.get("rm") != True:
-            continue  # не съемное устройство
+            continue
 
-        for part in dev.get("children", []):
+        dev_path = dev.get("path")
+        dev_mountpoint = dev.get("mountpoint")
+        dev_fstype = dev.get("fstype")
+
+        # 1. Сначала ищем разделы типа /dev/sdb1
+        for part in dev.get("children", []) or []:
             path = part.get("path")
             mountpoint = part.get("mountpoint")
             fstype = part.get("fstype")
@@ -31,11 +37,16 @@ def find_usb_partition():
             if not path or not fstype:
                 continue
 
-            # ❌ исключаем системные разделы
             if mountpoint in ("/", "/boot", "/boot/firmware"):
                 continue
 
             return path
+
+        # 2. Если разделов нет, но сама флешка имеет файловую систему
+        # например /dev/sdb с exfat/vfat прямо на диске
+        if dev_path and dev_fstype:
+            if dev_mountpoint not in ("/", "/boot", "/boot/firmware"):
+                return dev_path
 
     return None
 
@@ -52,9 +63,24 @@ def is_mounted(mount_point: str) -> bool:
 
 def mount_usb_partition(dev_path: str, mount_point: str) -> bool:
     ensure_mount_point()
+
     if is_mounted(mount_point):
         return True
-    return run_cmd(["mount", dev_path, mount_point]).returncode == 0
+
+    # uid/gid пользователя omega, чтобы сервис мог писать на vfat/exfat/ntfs
+    uid = os.getuid()
+    gid = os.getgid()
+
+    mount_options = f"uid={uid},gid={gid},umask=002"
+
+    res = run_cmd(["mount", "-o", mount_options, dev_path, mount_point])
+
+    if res.returncode == 0:
+        return True
+
+    # fallback для ext4 или других ФС, где uid/gid mount options не поддерживаются
+    res = run_cmd(["mount", dev_path, mount_point])
+    return res.returncode == 0
 
 def unmount_usb(mount_point: str) -> bool:
     if not is_mounted(mount_point):

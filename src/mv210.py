@@ -11,20 +11,26 @@ from config import (
 
 class MV210Client:
     def __init__(self):
-        self.client = ModbusTcpClient(MV210_IP, port=MV210_PORT)
+        self.client = None
 
     def connect(self):
+        self.disconnect()
+        self.client = ModbusTcpClient(MV210_IP, port=MV210_PORT)
+
         if not self.client.connect():
             raise RuntimeError("Connection to MV210 failed")
 
     def disconnect(self):
         try:
-            self.client.close()
+            if self.client:
+                self.client.close()
         except Exception:
             pass
+        finally:
+            self.client = None
 
     def is_connected(self) -> bool:
-        return bool(getattr(self.client, "socket", None))
+        return self.client is not None
 
     @staticmethod
     def _u32_from_regs_swapped_words(regs):
@@ -38,6 +44,9 @@ class MV210Client:
         return (high_word << 16) | low_word
 
     def read_u32(self, address: int) -> int:
+        if self.client is None:
+            raise RuntimeError("MV210 is not connected")
+
         rr = self.client.read_holding_registers(
             address=address,
             count=2,
@@ -45,6 +54,7 @@ class MV210Client:
         )
         if rr.isError():
             raise RuntimeError(f"Modbus read error at {address}: {rr}")
+
         return self._u32_from_regs_swapped_words(rr.registers)
 
     def read_di1_counter(self) -> int:
