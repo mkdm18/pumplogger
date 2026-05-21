@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0
+## v1.0.1
 
 ### Fixed
 - Исправлено восстановление соединения с MV210 после ошибок `Broken pipe`.
@@ -25,7 +25,7 @@
 
 ---
 
-## v1.1.0 — Planned
+## v1.0.2 — Planned
 
 ### Planned
 - Использование фиксированного пользователя `omega` вместо `os.getuid()/os.getgid()` для USB mount.

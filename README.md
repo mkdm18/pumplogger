@@ -1,10 +1,10 @@
 # Pump Station Logger
-![Version](https://img.shields.io/badge/version-1.0-blue)
+![Version](https://img.shields.io/badge/version-1.0.1-blue)
 ![Status](https://img.shields.io/badge/status-stable-green)
 ![Platform](https://img.shields.io/badge/platform-RaspberryPi-orange)
 
 ## 📦 1. Download
-[Download v1.0](https://github.com/mkdm18/pumplogger/releases/tag/v1.0)
+[Download v1.0.1](https://github.com/mkdm18/pumplogger/releases/tag/v1.0.1)
 
 ## 📌 2. Overview
 Pump Station Logger — автономная система сбора, расчёта и хранения данных насосной станции.  
@@ -14,7 +14,7 @@ Pump Station Logger — автономная система сбора, расч
 ✔ Экспорт на USB  
 ✔ SMART-аналитика  
 
-## 🚀 3. Version 1.0 (Stable)
+## 🚀 3. Version 1.0.1 (Stable)
 
 ### 3.1. Основные возможности
 - Расчёт RPM по периоду (DI3)
