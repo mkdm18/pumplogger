@@ -287,104 +287,7 @@ WAL mode уменьшает:
 * SQLite write contention
 * вероятность повреждения БД при интенсивной записи
 
-### 8.7 ♻️ Restore Existing Database (Optional)
-Если остались БД от предыдущей установки, их можно использовать повторно.
-Поддерживаются:
-* main.db
-* main_backup_a.db
-* main_backup_b.db
-
-#### 8.7.1. Остановить сервис
-```bash 
-     sudo systemctl stop pump_station.service
-```
-
-#### 8.7.2. Скопировать старые БД
-Например с USB SSD:
-```bash
-     sudo cp /media/oldssd/main.db /opt/pump_station/data/
-     sudo cp /media/oldssd/main_backup_a.db /opt/pump_station/data/
-     sudo cp /media/oldssd/main_backup_b.db /opt/pump_station/data/
-```
-
-#### 8.7.3. Назначить права
-```bash
-     sudo chown user:user /opt/pump_station/data/*.db
-```
-
-#### 8.7.4. Проверить целостность SQLite
-```bash
-     sqlite3 /opt/pump_station/data/main.db "PRAGMA integrity_check;"
-```
-Ожидается:
-```text
-     ok
-```
-
-#### 8.7.5. Проверить таблицы
-```bash
-     sqlite3 /opt/pump_station/data/main.db ".tables"
-```
-Ожидаются:
-```text
-     meta_state
-     board_log
-     work_log
-     system_log
-     usb_export_log
-     smart_counters
-```
-
-#### 8.7.6. Проверить WAL mode
-```bash
-     sqlite3 /opt/pump_station/data/main.db "PRAGMA journal_mode;"
-```
-Если НЕ `wal`, открыть:
-```bash
-     sudo mcedit /opt/pump_station/db.py
-```
-и убедиться что после sqlite3.connect(...) добавлены:
-```python
-     self.conn.execute("PRAGMA journal_mode=WAL;")
-     self.conn.execute("PRAGMA synchronous=NORMAL;")
-     self.conn.execute("PRAGMA busy_timeout=30000;")
-```
-
-#### 8.7.7. Запустить сервис
-```bash
-     sudo systemctl start pump_station.service
-```
-
-#### 8.7.8. Проверить запуск
-```bash
-     systemctl status pump_station.service
-```
-и:
-```bash
-     journalctl -u pump_station.service -n 50 --no-pager
-```
-
-#### 8.7.9. Проверить последние данные
-```bash
-     sqlite3 -header -column /opt/pump_station/data/main.db "
-     SELECT
-     datetime(timestamp_utc,'unixepoch'),
-     pump_total_liters
-     FROM work_log
-     ORDER BY id DESC
-     LIMIT 5;
-     "
-```
-
-#### 8.7.10. Если main.db повреждена
-Попробовать backup:
-```bash
-     cp /opt/pump_station/data/main_backup_a.db /opt/pump_station/data/main.db
-```
-или:
-```bash
-     cp /opt/pump_station/data/main_backup_b.db /opt/pump_station/data/main.db
-```
+### 8.7 Резерв
 
 ### 8.8. Проверка связности устройств
 ```bash
@@ -444,32 +347,32 @@ WAL mode уменьшает:
      systemctl status pump_station.service
 ```
 
-### 8.14. Вспомогательные функции для отладки и проверки работы
-#### 8.14.1. Посмотреть значения с датчика кардана “вживую”
+## 🔧 9. Debug & Testing
+### 9.1. Посмотреть значения с датчика кардана “вживую”
 ```bash
      cd /opt/pump_station
      source venv/bin/activate
      python read_mv210_live.py   #должен показывать period_ms, pump_rpm, flow_lps.  
 ```
 
-#### 8.14.2. Сброс максимумов
+### 9.2. Сброс максимумов
 ```bash
      cd /opt/pump_station
      source venv/bin/activate
      python reset_maxima.py
 ```
 
-#### 8.14.3. Проверить таблицу SMART
+### 9.3. Проверить таблицу SMART
 ```bash
      sqlite3 -column -header /opt/pump_station/data/main.db "SELECT key, value_minutes FROM smart_counters ORDER BY key;"
 ```
 
-#### 8.14.4. Бэкап архивирование всего проекта
+### 9.4. Бэкап архивирование всего проекта
 ```bash
      sudo tar -czvf /home/user/pump_backup_$(date +%F_%H-%M-%S).tar.gz /opt/pump_station /etc/systemd/system/pump_station.service
 ```
 
-#### 8.14.5. Прочие полезные команды
+### 9.5. Прочие полезные команды
 ```bash
      journalctl -u pump_station.service -n 100 --no-pager #Смотреть лог работы, последние 100 строк
      journalctl -u pump_station.service -f #Смотреть лог работы, онлайн
@@ -479,7 +382,7 @@ WAL mode уменьшает:
      du -sh /opt/pump_station/data #Размер папки данных
      df -h #Свободное место на диске
 ```
-#### 8.14.6. Последний system log:
+### 9.6 Последний system log:
 ```bash
 sqlite3 /opt/pump_station/data/main.db "
 SELECT datetime(timestamp_utc,'unixepoch'),
@@ -488,7 +391,7 @@ FROM system_log
 ORDER BY id DESC
 LIMIT 20;"
 ```
-#### 8.14.7. Последний work log:
+### 9.7. Последний work log:
 ```bash
 sqlite3 /opt/pump_station/data/main.db "
 SELECT *
@@ -496,7 +399,7 @@ FROM work_log
 ORDER BY id DESC
 LIMIT 5;"
 ```
-#### 8.14.8. Системные события:
+### 9.8. Системные события:
 ```bash
 sqlite3 /opt/pump_station/data/main.db "
 SELECT
@@ -508,7 +411,7 @@ FROM system_log
 ORDER BY id DESC
 LIMIT 20;"
 ```
-#### 8.14.9. Последние рабочие данные:
+### 9.9. Последние рабочие данные:
 ```bash
 sqlite3 /opt/pump_station/data/main.db "
 SELECT
@@ -521,7 +424,7 @@ FROM work_log
 ORDER BY id DESC
 LIMIT 20;"
 ```
-#### 8.14.10. Последние board данные:
+### 9.10. Последние board данные:
 ```bash
 sqlite3 /opt/pump_station/data/main.db "
 SELECT
@@ -534,19 +437,19 @@ FROM board_log
 ORDER BY id DESC
 LIMIT 20;"
 ```
-#### 8.14.11. Все meta параметры:
+### 9.11. Все meta параметры:
 ```bash
 sqlite3 /opt/pump_station/data/main.db "
 SELECT * FROM meta_state;"
 ```
 
-#### 8.14.12. SMART counters
+### 9.12. SMART counters
 ```bash
 sqlite3 /opt/pump_station/data/main.db "
 SELECT * FROM smart_counters;"
 ```
 
-#### 8.14.13. Размер таблиц
+### 9.13. Размер таблиц
 ```bash
 sqlite3 /opt/pump_station/data/main.db "
 SELECT
@@ -562,176 +465,3 @@ Version 1.0 — стабильная версия
 Готово к эксплуатации
 
 
-исправление 1 mv210.py
-```bash
-from pymodbus.client import ModbusTcpClient
-
-from config import (
-    MV210_IP,
-    MV210_PORT,
-    MV210_UNIT,
-    MV210_DI1_COUNTER_ADDR,
-    MV210_DI3_PERIOD_ADDR,
-)
-
-
-class MV210Client:
-    def __init__(self):
-        self.client = None
-
-    def connect(self):
-        self.disconnect()
-        self.client = ModbusTcpClient(MV210_IP, port=MV210_PORT)
-
-        if not self.client.connect():
-            raise RuntimeError("Connection to MV210 failed")
-
-    def disconnect(self):
-        try:
-            if self.client:
-                self.client.close()
-        except Exception:
-            pass
-        finally:
-            self.client = None
-
-    def is_connected(self) -> bool:
-        return self.client is not None
-
-    @staticmethod
-    def _u32_from_regs_swapped_words(regs):
-        """
-        МВ210 отдает UINT32 как [low_word, high_word]
-        """
-        if len(regs) != 2:
-            raise ValueError(f"Expected 2 registers, got {len(regs)}")
-        low_word = regs[0]
-        high_word = regs[1]
-        return (high_word << 16) | low_word
-
-    def read_u32(self, address: int) -> int:
-        if self.client is None:
-            raise RuntimeError("MV210 is not connected")
-
-        rr = self.client.read_holding_registers(
-            address=address,
-            count=2,
-            device_id=MV210_UNIT,
-        )
-        if rr.isError():
-            raise RuntimeError(f"Modbus read error at {address}: {rr}")
-
-        return self._u32_from_regs_swapped_words(rr.registers)
-
-    def read_di1_counter(self) -> int:
-        return self.read_u32(MV210_DI1_COUNTER_ADDR)
-
-    def read_di3_period_ms(self) -> int:
-        return self.read_u32(MV210_DI3_PERIOD_ADDR)
-```
-Исправление 2 Правим app.py
-замени 
-```bash
-        # Чтение МВ210
-        try:
-            counter = mv.read_di1_counter()
-            raw_period_ms = mv.read_di3_period_ms()
-        except Exception as e:
-            db.insert_system_log("ERROR", "MV210_READ_ERROR", str(e))
-            db.commit()
-            time.sleep(WAIT_POLL_SECONDS)
-            continue
-```
-на
-```bash
-        # Чтение МВ210
-        try:
-            counter = mv.read_di1_counter()
-            raw_period_ms = mv.read_di3_period_ms()
-        except Exception as e:
-            db.insert_system_log("ERROR", "MV210_READ_ERROR", str(e))
-            db.commit()
-
-            try:
-                mv.disconnect()
-            except Exception:
-                pass
-
-            time.sleep(WAIT_POLL_SECONDS)
-            continue
-```
-Исправление 3 Правим usb_export.py 
-В начале файла добавь os:
-```bash
-import csv, json, sqlite3, subprocess, time, os
-```
-find_usb_partition() замени целиком на эту:
-```bash
-def find_usb_partition():
-    """
-    Ищем реальную флешку:
-    - removable device RM=1
-    - поддерживаем флешки с разделом: /dev/sdb1
-    - поддерживаем флешки без раздела: /dev/sdb
-    - исключаем системные разделы
-    """
-    cmd = ["lsblk", "-J", "-o", "NAME,PATH,RM,MOUNTPOINT,FSTYPE,TYPE"]
-    res = run_cmd(cmd)
-    if res.returncode != 0:
-        return None
-
-    data = json.loads(res.stdout)
-
-    for dev in data.get("blockdevices", []):
-        if dev.get("rm") != True:
-            continue
-
-        dev_path = dev.get("path")
-        dev_mountpoint = dev.get("mountpoint")
-        dev_fstype = dev.get("fstype")
-
-        # 1. Сначала ищем разделы типа /dev/sdb1
-        for part in dev.get("children", []) or []:
-            path = part.get("path")
-            mountpoint = part.get("mountpoint")
-            fstype = part.get("fstype")
-
-            if not path or not fstype:
-                continue
-
-            if mountpoint in ("/", "/boot", "/boot/firmware"):
-                continue
-
-            return path
-
-        # 2. Если разделов нет, но сама флешка имеет файловую систему
-        # например /dev/sdb с exfat/vfat прямо на диске
-        if dev_path and dev_fstype:
-            if dev_mountpoint not in ("/", "/boot", "/boot/firmware"):
-                return dev_path
-
-    return None
-```
-Исправление 4 замени mount_usb_partition()
-```bash
-def mount_usb_partition(dev_path: str, mount_point: str) -> bool:
-    ensure_mount_point()
-
-    if is_mounted(mount_point):
-        return True
-
-    # uid/gid пользователя omega, чтобы сервис мог писать на vfat/exfat/ntfs
-    uid = os.getuid()
-    gid = os.getgid()
-
-    mount_options = f"uid={uid},gid={gid},umask=002"
-
-    res = run_cmd(["mount", "-o", mount_options, dev_path, mount_point])
-
-    if res.returncode == 0:
-        return True
-
-    # fallback для ext4 или других ФС, где uid/gid mount options не поддерживаются
-    res = run_cmd(["mount", dev_path, mount_point])
-    return res.returncode == 0
-    ```
